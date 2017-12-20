@@ -15,7 +15,9 @@ func Provider() terraform.ResourceProvider {
 				Description: "Slack Authentication Token for api.slack.com",
 			},
 		},
-		ResourcesMap:  map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"slack_channel": resourceChannel(),
+		},
 		ConfigureFunc: configureProvider,
 	}
 }
