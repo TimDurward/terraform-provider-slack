@@ -38,17 +38,17 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 
 	api.SetDebug(true)
 
-	// TODO: Should check err and nil before sending blindly
-	api.CreateChannel(channelName)
+	channel, err := api.CreateChannel(channelName)
 
-	// TODO: Return Slack Channel ID
-	// Schema.Create requires ID to be set
-	// ID: The resource ID
+	if err != nil {
+		log.Println("[DEBUG] Cannot create Slack chanel: [", channelName, "]")
+		return nil
+	}
 
-	// Adding placeholder ID for now
-	d.SetId("Placeholder_ID")
-
+	// ResourceID is set as Slack Channel ID
+	d.SetId(channel.ID)
 	return nil
+
 }
 
 func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
