@@ -36,8 +36,6 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 	channelName := d.Get("channel_name").(string)
 	api := slack.New(meta.(*Config).APIToken)
 
-	api.SetDebug(true)
-
 	channel, err := api.CreateChannel(channelName)
 
 	if err != nil {
@@ -45,13 +43,23 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	// ResourceID is set as Slack Channel ID
+	// Set ResourceChannel ID to Slack::Channel.ID
 	d.SetId(channel.ID)
 	return nil
 
 }
 
 func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
+	api := slack.New(meta.(*Config).APIToken)
+
+	_, channelResponse := api.GetChannelInfo(d.Id())
+
+	if channelResponse != nil {
+		// Channel does not exist - Inform Terraform by setting blank id
+		d.SetId("")
+		return nil
+	}
+
 	return nil
 }
 
