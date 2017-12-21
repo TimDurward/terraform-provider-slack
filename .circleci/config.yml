@@ -7,4 +7,5 @@ jobs:
     working_directory: /go/src/github.com/timdurward/terraform-provider-slack
     steps:
       - checkout
+      - run: go get
       - run: make test
