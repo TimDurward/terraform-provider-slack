@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/nlopes/slack"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -31,16 +29,14 @@ func resourceChannelExists(d *schema.ResourceData, meta interface{}) (b bool, e 
 }
 
 func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("[INFO] Creating Slack channel")
-
 	channelName := d.Get("channel_name").(string)
 	api := slack.New(meta.(*Config).APIToken)
 
 	channel, err := api.CreateChannel(channelName)
 
+	// Check if Channel Creation throws upstream api errors
 	if err != nil {
-		log.Println("[DEBUG] Cannot create Slack chanel: [", channelName, "]")
-		return nil
+		return err
 	}
 
 	// Set ResourceChannel ID to Slack::Channel.ID
