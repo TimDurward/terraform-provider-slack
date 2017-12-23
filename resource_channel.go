@@ -24,7 +24,12 @@ func resourceChannel() *schema.Resource {
 			"is_private": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Boolean value to check if Slack channel will be private or not",
-				Required:    true,
+				Optional:    true,
+			},
+			"channel_topic": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Sets the topic for a channel",
+				Optional:    true,
 			},
 		},
 	}
@@ -35,27 +40,19 @@ func resourceChannelExists(d *schema.ResourceData, meta interface{}) (b bool, e 
 }
 
 func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	channelName := d.Get("channel_name").(string)
 	isPrivate := d.Get("is_private").(bool)
 
-	api := slack.New(meta.(*Config).APIToken)
-
 	if isPrivate {
-		channel, err := api.CreateGroup(channelName)
-
+		err := createPrivateChannel(d, meta)
 		if err != nil {
 			return err
 		}
-
-		d.SetId(channel.ID)
-		return nil
+	} else {
+		err := createPublicChannel(d, meta)
+		if err != nil {
+			return err
+		}
 	}
-
-	channel, err := api.CreateChannel(channelName)
-	if err != nil {
-		return err
-	}
-	d.SetId(channel.ID)
 	return nil
 }
 
@@ -77,5 +74,47 @@ func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
+	return nil
+}
+
+func createPrivateChannel(d *schema.ResourceData, meta interface{}) error {
+	channelName := d.Get("channel_name").(string)
+	channelTopic := d.Get("channel_topic").(string)
+	api := slack.New(meta.(*Config).APIToken)
+
+	privateChannel, privateChannelerror := api.CreateGroup(channelName)
+
+	if privateChannelerror != nil {
+		return privateChannelerror
+	}
+
+	_, topicError := api.SetGroupTopic(privateChannel.ID, channelTopic)
+
+	if topicError != nil {
+		return topicError
+	}
+
+	d.SetId(privateChannel.ID)
+	return privateChannelerror
+}
+
+func createPublicChannel(d *schema.ResourceData, meta interface{}) error {
+	channelName := d.Get("channel_name").(string)
+	channelTopic := d.Get("channel_topic").(string)
+	api := slack.New(meta.(*Config).APIToken)
+
+	publicChannel, publicChannelError := api.CreateGroup(channelName)
+
+	if publicChannelError != nil {
+		return publicChannelError
+	}
+
+	_, topicError := api.SetGroupTopic(publicChannel.ID, channelTopic)
+
+	if topicError != nil {
+		return topicError
+	}
+
+	d.SetId(publicChannel.ID)
 	return nil
 }
