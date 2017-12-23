@@ -20,6 +20,12 @@ func resourceChannel() *schema.Resource {
 				Description: "The name of Slack Channel that will be created",
 				Required:    true,
 			},
+
+			"is_private": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "Boolean value to check if Slack channel will be private or not",
+				Required:    true,
+			},
 		},
 	}
 }
@@ -30,19 +36,27 @@ func resourceChannelExists(d *schema.ResourceData, meta interface{}) (b bool, e 
 
 func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 	channelName := d.Get("channel_name").(string)
+	isPrivate := d.Get("is_private").(bool)
+
 	api := slack.New(meta.(*Config).APIToken)
 
-	channel, err := api.CreateChannel(channelName)
+	if isPrivate {
+		channel, err := api.CreateGroup(channelName)
 
-	// Check if Channel Creation throws upstream api errors
+		if err != nil {
+			return err
+		}
+
+		d.SetId(channel.ID)
+		return nil
+	}
+
+	channel, err := api.CreateChannel(channelName)
 	if err != nil {
 		return err
 	}
-
-	// Set ResourceChannel ID to Slack::Channel.ID
 	d.SetId(channel.ID)
 	return nil
-
 }
 
 func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
@@ -51,7 +65,6 @@ func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
 	_, channelResponse := api.GetChannelInfo(d.Id())
 
 	if channelResponse != nil {
-		// Channel does not exist - Inform Terraform by setting blank id
 		d.SetId("")
 		return nil
 	}
