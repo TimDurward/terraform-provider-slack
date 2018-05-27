@@ -23,11 +23,6 @@ func Provider() terraform.ResourceProvider {
 }
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
-	/*
-		Config: APIToken
-		A string value used to authenticate new slack clients
-		i.e api := slack.New(m.(*Config).APIKey)
-	*/
 	config := &Config{
 		APIToken: d.Get("api_token").(string),
 	}

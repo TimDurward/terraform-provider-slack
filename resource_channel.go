@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/nlopes/slack"
-
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/timdurward/slack"
 )
 
 func resourceChannel() *schema.Resource {
@@ -21,11 +20,6 @@ func resourceChannel() *schema.Resource {
 				Required:    true,
 			},
 
-			"is_private": &schema.Schema{
-				Type:        schema.TypeBool,
-				Description: "Boolean value to check if Slack channel will be private or not",
-				Optional:    true,
-			},
 			"channel_topic": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Sets the topic for a channel",
@@ -40,28 +34,30 @@ func resourceChannelExists(d *schema.ResourceData, meta interface{}) (b bool, e 
 }
 
 func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	isPrivate := d.Get("is_private").(bool)
+	api := slack.New(meta.(*Config).APIToken)
 
-	if isPrivate {
-		err := createPrivateChannel(d, meta)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := createPublicChannel(d, meta)
-		if err != nil {
-			return err
-		}
+	// Create Slack Channel
+	//TODO: Add 21 Character Limit check
+	channel, err := api.CreateChannel(d.Get("channel_name").(string))
+	if err != nil {
+		return err
 	}
+	d.SetId(channel.ID)
+
+	// Create Slack Channel Topic
+	if _, err := api.SetChannelTopic(channel.ID, d.Get("channel_topic").(string)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
 	api := slack.New(meta.(*Config).APIToken)
 
-	_, channelResponse := api.GetChannelInfo(d.Id())
-
-	if channelResponse != nil {
+	// Checks if Slack Channel exists, if not remove resource from state
+	_, err := api.GetChannelInfo(d.Id())
+	if err != nil {
 		d.SetId("")
 		return nil
 	}
@@ -74,47 +70,13 @@ func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
-func createPrivateChannel(d *schema.ResourceData, meta interface{}) error {
-	channelName := d.Get("channel_name").(string)
-	channelTopic := d.Get("channel_topic").(string)
 	api := slack.New(meta.(*Config).APIToken)
 
-	privateChannel, privateChannelerror := api.CreateGroup(channelName)
-
-	if privateChannelerror != nil {
-		return privateChannelerror
+	// Deletes Slack Channel and clears state
+	_, err := api.DeleteChannel(d.Id())
+	if err != nil {
+		return err
 	}
 
-	_, topicError := api.SetGroupTopic(privateChannel.ID, channelTopic)
-
-	if topicError != nil {
-		return topicError
-	}
-
-	d.SetId(privateChannel.ID)
-	return privateChannelerror
-}
-
-func createPublicChannel(d *schema.ResourceData, meta interface{}) error {
-	channelName := d.Get("channel_name").(string)
-	channelTopic := d.Get("channel_topic").(string)
-	api := slack.New(meta.(*Config).APIToken)
-
-	publicChannel, publicChannelError := api.CreateGroup(channelName)
-
-	if publicChannelError != nil {
-		return publicChannelError
-	}
-
-	_, topicError := api.SetGroupTopic(publicChannel.ID, channelTopic)
-
-	if topicError != nil {
-		return topicError
-	}
-
-	d.SetId(publicChannel.ID)
 	return nil
 }
