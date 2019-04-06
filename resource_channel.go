@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/timdurward/slack"
 )
 
@@ -15,9 +16,10 @@ func resourceChannel() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"channel_name": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The name of Slack Channel that will be created",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The name of Slack Channel that will be created",
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 21),
 			},
 
 			"channel_topic": &schema.Schema{
@@ -37,7 +39,6 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 	api := slack.New(meta.(*Config).APIToken)
 
 	// Create Slack Channel
-	//TODO: Add 21 Character Limit check
 	channel, err := api.CreateChannel(d.Get("channel_name").(string))
 	if err != nil {
 		return err
