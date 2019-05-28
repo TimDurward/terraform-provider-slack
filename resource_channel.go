@@ -66,6 +66,12 @@ func resourceChannelRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
+	api := slack.New(meta.(*Config).APIToken)
+
+	name := d.Get("channel_name").(string)
+	if _, err := api.RenameChannel(d.Id(), name); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -73,8 +79,7 @@ func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
 	api := slack.New(meta.(*Config).APIToken)
 
 	// Deletes Slack Channel and clears state
-	_, err := api.DeleteChannel(d.Id())
-	if err != nil {
+	if _, err := api.DeleteChannel(d.Id()); err != nil {
 		return err
 	}
 
