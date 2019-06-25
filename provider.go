@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+// Provider returns a schema.Provider to manage slack.
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -17,6 +18,9 @@ func Provider() terraform.ResourceProvider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"slack_channel": resourceChannel(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"slack_user": dataSourceSlackUser(),
 		},
 		ConfigureFunc: configureProvider,
 	}
