@@ -36,11 +36,16 @@ Now copy the binary to the Terraform's plugins folder, if is your first plugin m
 
 ```hcl
 provider "slack" {
+  # Can also instead be provided through the API_TOKEN environment variable.
+  # Note that SLACK_API_TOKEN is a user type token, the required scopes depends on which methods are called.
   api_token = "SLACK_API_TOKEN"
 }
 
 resource "slack_channel" "jenkins_ci" {
   channel_name = "jenkins"
   channel_topic = "Jenkins Integration for production deploys"
+  # force_delete (optional) requires the admin scope if set to true (default, will delete the channel in case of resource destruction)
+  # force_delete (optional) requires the channels:write scope if set to false (will archive the channel in case of resource destruction)
+  force_delete = true
 }
 ```

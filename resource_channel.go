@@ -27,6 +27,12 @@ func resourceChannel() *schema.Resource {
 				Description: "Sets the topic for a channel",
 				Optional:    true,
 			},
+			"force_delete": &schema.Schema{
+				Type:        schema.TypeBool,
+				Default:     true,
+				Description: "Force the deletion of the channel instead of archiving it",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -40,13 +46,37 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 
 	// Create Slack Channel
 	channel, err := api.CreateChannel(d.Get("channel_name").(string))
-	if err != nil {
+	if err.Error() == "name_taken" {
+		// Channel most likely has to be unarchived
+		channels, err := api.GetChannels(false)
+		if err != nil {
+			return err
+		}
+		for _, c := range channels {
+			if !c.IsArchived {
+				continue
+			}
+			if c.Name != d.Get("channel_name").(string) {
+				continue
+			}
+			channel, err := api.GetChannelInfo(c.ID)
+			if err != nil {
+				return err
+			}
+			err = api.UnarchiveChannel(channel.ID)
+			d.SetId(channel.ID)
+			if err != nil {
+				return err
+			}
+		}
+	} else if err == nil {
+		d.SetId(channel.ID)
+	} else if err != nil {
 		return err
 	}
-	d.SetId(channel.ID)
 
 	// Create Slack Channel Topic
-	if _, err := api.SetChannelTopic(channel.ID, d.Get("channel_topic").(string)); err != nil {
+	if _, err := api.SetChannelTopic(d.Id(), d.Get("channel_topic").(string)); err != nil {
 		return err
 	}
 
@@ -79,9 +109,16 @@ func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
 	api := slack.New(meta.(*Config).APIToken)
 
-	// Deletes Slack Channel and clears state
-	if _, err := api.DeleteChannel(d.Id()); err != nil {
-		return err
+	if d.Get("force_delete").(bool) {
+		// Deletes Slack Channel and clears state
+		if _, err := api.DeleteChannel(d.Id()); err != nil {
+			return err
+		}
+	} else {
+		// Archives Slack Channel
+		if err := api.ArchiveChannel(d.Id()); err != nil {
+			return err
+		}
 	}
 
 	return nil
