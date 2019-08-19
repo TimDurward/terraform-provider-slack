@@ -73,6 +73,10 @@ func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := api.RenameChannel(d.Id(), name); err != nil {
 		return err
 	}
+	// Update Slack Channel Topic
+	if _, err := api.SetChannelTopic(d.Id(), d.Get("channel_topic").(string)); err != nil {
+		return err
+	}
 	return nil
 }
 
