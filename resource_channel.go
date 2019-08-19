@@ -13,6 +13,9 @@ func resourceChannel() *schema.Resource {
 		Update: resourceChannelUpdate,
 		Delete: resourceChannelDelete,
 		Exists: resourceChannelExists,
+		Importer: &schema.ResourceImporter{
+			State: resourceChannelImportState,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"channel_name": &schema.Schema{
@@ -103,4 +106,20 @@ func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
+}
+
+func resourceChannelImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	api := slack.New(meta.(*Config).APIToken)
+
+	// Checks if Slack Channel exists, if not remove resource from state
+	channel, err := api.GetConversationInfo(d.Id(), false)
+	if err != nil {
+		d.SetId("")
+		return nil, err
+	}
+	d.Set("channel_name", channel.Name)
+	d.Set("channel_purpose", channel.Purpose.Value)
+	d.Set("channel_topic", channel.Topic.Value)
+
+	return []*schema.ResourceData{d}, nil
 }
