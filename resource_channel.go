@@ -13,6 +13,9 @@ func resourceChannel() *schema.Resource {
 		Update: resourceChannelUpdate,
 		Delete: resourceChannelDelete,
 		Exists: resourceChannelExists,
+		Importer: &schema.ResourceImporter{
+			State: resourceChannelImportState,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"channel_name": &schema.Schema{
@@ -20,6 +23,12 @@ func resourceChannel() *schema.Resource {
 				Description:  "The name of Slack Channel that will be created",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 21),
+			},
+
+			"channel_purpose": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Sets the purpose for a channel",
+				Optional:    true,
 			},
 
 			"channel_topic": &schema.Schema{
@@ -45,6 +54,10 @@ func resourceChannelCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId(channel.ID)
 
+	// Update Slack Channel Purpose
+	if _, err := api.SetChannelPurpose(d.Id(), d.Get("channel_purpose").(string)); err != nil {
+		return err
+	}
 	// Create Slack Channel Topic
 	if _, err := api.SetChannelTopic(channel.ID, d.Get("channel_topic").(string)); err != nil {
 		return err
@@ -73,6 +86,14 @@ func resourceChannelUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := api.RenameChannel(d.Id(), name); err != nil {
 		return err
 	}
+	// Update Slack Channel Purpose
+	if _, err := api.SetChannelPurpose(d.Id(), d.Get("channel_purpose").(string)); err != nil {
+		return err
+	}
+	// Update Slack Channel Topic
+	if _, err := api.SetChannelTopic(d.Id(), d.Get("channel_topic").(string)); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -85,4 +106,20 @@ func resourceChannelDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
+}
+
+func resourceChannelImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	api := slack.New(meta.(*Config).APIToken)
+
+	// Checks if Slack Channel exists, if not remove resource from state
+	channel, err := api.GetConversationInfo(d.Id(), false)
+	if err != nil {
+		d.SetId("")
+		return nil, err
+	}
+	d.Set("channel_name", channel.Name)
+	d.Set("channel_purpose", channel.Purpose.Value)
+	d.Set("channel_topic", channel.Topic.Value)
+
+	return []*schema.ResourceData{d}, nil
 }
