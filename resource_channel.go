@@ -22,7 +22,7 @@ func resourceChannel() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The name of Slack Channel that will be created",
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 21),
+				ValidateFunc: validation.StringLenBetween(1, 80),
 			},
 
 			"channel_purpose": &schema.Schema{
