@@ -10,7 +10,7 @@ _The provider allows for creation & desruction of public Slack channels_
 
 terraform-provider-slack is based on Terraform, this means that you need
 
-* [Terraform](https://www.terraform.io/downloads.html) >=0.10.0
+* [Terraform](https://www.terraform.io/downloads.html) >=0.12.0
 
 ## Installation from binaries (recommended)
 
