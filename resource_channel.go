@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	"github.com/timdurward/slack"
+	"github.com/slack-go/slack"
 )
 
 func resourceChannel() *schema.Resource {

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/timdurward/slack"
+	"github.com/slack-go/slack"
 )
 
 func dataSourceSlackUser() *schema.Resource {
