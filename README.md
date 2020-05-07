@@ -16,21 +16,37 @@ terraform-provider-slack is based on Terraform, this means that you need
 
 The recommended way to install terraform-provider-slack is use the binary distributions from the [Releases](https://github.com/TimDurward/terraform-provider-slack/releases) page. The packages are available for Linux and macOS.
 
-Download and uncompress the latest release for your OS. This example uses the linux binary.
+Download the latest release for your OS.
+
+### Linux
 
 ```sh
-> wget https://github.com/TimDurward/terraform-provider-slack/releases/download/v0.1.0/terraform-provider-slack_v0.1.0_darwin_amd64.tar.gz
-> tar -xvf terraform-provider-slack*.tar.gz
+> wget https://github.com/TimDurward/terraform-provider-slack/releases/download/v0.2.0/terraform-provider-slack_linux_amd64
+# Now copy the binary to the Terraform's plugins folder.
+mkdir -p ~/.terraform.d/plugins/
+mv terraform-provider-slack_linux_amd64 ~/.terraform.d/plugins/
 ```
 
-Now copy the binary to the Terraform's plugins folder, if is your first plugin maybe isn't present.
+### Mac
 
 ```sh
-> mkdir -p ~/.terraform.d/plugins/
-> mv terraform-provider-slack*/terraform-provider-slack ~/.terraform.d/plugins/
+> wget https://github.com/TimDurward/terraform-provider-slack/releases/download/v0.2.0/terraform-provider-slack_darwin_amd64
+# Now copy the binary to the Terraform's plugins folder.
+mkdir -p ~/.terraform.d/plugins/
+mv terraform-provider-slack_darwin_amd64 ~/.terraform.d/plugins/
 ```
 
-### \*_You can always install from source with [Makefile](https://github.com/TimDurward/terraform-provider-slack/blob/master/Makefile)_
+## Compiling from source
+Compile from source easily using [Makefile](https://github.com/TimDurward/terraform-provider-slack/blob/master/Makefile). 
+
+\*_This is only necessary if your target OS/Architecture isn't listed in [releases](https://github.com/TimDurward/terraform-provider-slack/releases)_
+
+```sh
+make build
+
+# Target is compiled at '$GOBIN/terraform-provider-slack'
+mv $GOBIN/terraform-provider-slack ~/.terraform.d/plugins/
+```
 
 # Example
 
