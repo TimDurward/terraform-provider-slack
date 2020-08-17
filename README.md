@@ -2,7 +2,7 @@
 
 This is a [Slack](https://slack.com) provider for [Terraform](https://www.terraform.io/)
 
-_The provider allows for creation & desruction of public Slack channels_
+_The provider allows for creation & destruction of public Slack channels_
 
 # Installation
 
