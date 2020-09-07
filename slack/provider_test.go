@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 var (
@@ -29,7 +29,7 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v:= os.Getenv("SLACK_API"); v == "" {
+	if v:= os.Getenv("SLACK_API_TOKEN"); v == "" {
 		t.Fatal("SLACK_API_TOKEN must be set for acceptance tests")
 	}
 }
