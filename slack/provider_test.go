@@ -1,15 +1,19 @@
-package main
+package slack
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-var testAccProvider *schema.Provider
+var (
+	testAccProviders map[string]terraform.ResourceProvider
+	testAccProvider *schema.Provider
 
-//TODO: Need to add actual tests...
+)
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 }
@@ -25,4 +29,7 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
+	if v:= os.Getenv("SLACK_API"); v == "" {
+		t.Fatal("SLACK_API_TOKEN must be set for acceptance tests")
+	}
 }

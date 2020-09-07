@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"

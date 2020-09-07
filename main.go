@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/hashicorp/terraform/plugin"
+	"github.com/TimDurward/terraform-provider-slack/slack"
 )
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: Provider,
+		ProviderFunc: slack.Provider,
 	})
 }
