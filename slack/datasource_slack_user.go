@@ -38,15 +38,12 @@ func dataSourceSlackUserRead(d *schema.ResourceData, meta interface{}) error {
 
 	email := d.Get("email").(string)
 	log.Printf("[INFO] Reading Slack user '%s'", email)
-	// user, err := api.GetUserByEmail(email)
-	// if err != nil {
-	// 	return fmt.Errorf("Invalid user with email '%s'", email)
-	// }
 
 	users, err := api.GetUsers()
 	if err != nil {
 		return err
 	}
+
 	for _, user := range users {
 		if user.Profile.Email == email {
 			log.Printf("[DEBUG] Slack user: %v", user)

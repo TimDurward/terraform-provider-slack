@@ -55,6 +55,12 @@ provider "slack" {
   api_token = "SLACK_API_TOKEN"
 }
 
+data "slack_user" "name" {
+    name = "Jane"
+    real_name = "Jane Doe"
+    email = "janedoe@gmail.com"
+}
+
 resource "slack_channel" "jenkins_ci" {
   channel_name = "jenkins"
   channel_topic = "Jenkins Integration for production deploys"
