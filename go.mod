@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/hashicorp/terraform v0.12.20
+	github.com/hashicorp/terraform-plugin-sdk v1.15.0
 	github.com/slack-go/slack v0.6.4
 )
 
